@@ -40,10 +40,7 @@ def customPRF512(key,A,B):
     return R[:blen]
 
 # Read capture file -- it contains beacon, authentication, associacion, handshake and data
-wpa=rdpcap("wpa_handshake.cap") 
-
-
-# Below here are the seven values that we're about to dynamicaly extract from the capture file
+wpa=rdpcap("PMKID_handshake.cap") 
 
 assocRequests = []
 # get info from first association request (ssid, APMac, ClientMAC)
@@ -88,21 +85,13 @@ def attack(expected_pmkid, infos):
     return
 
 
-def main():
-    # Important parameters for key derivation - Those two aren't picked from the .cap file
-    passPhrase  = "actuelle"
-    A           = "Pairwise key expansion" #this string is used in the pseudo-random function
-    
+def main():    
     #Association Request Info
     getAssocReqInfo(wpa)
     for infos in assocRequests:
         pmkid = getPMKIDFromFirstHandshakeMessage(wpa, infos[1], infos[2])
         if pmkid != 0:
             attack(pmkid, infos)
-
-    # Get the PMKID from the first message of the handshake
-    pmkid = getPMKIDFromPacket(handshake[0])
-
 
 if __name__ == "__main__":
     main()
