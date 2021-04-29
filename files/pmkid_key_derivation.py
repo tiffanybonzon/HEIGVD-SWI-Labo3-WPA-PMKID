@@ -80,11 +80,24 @@ def getNouncesAndMic(handshake):
 def getDataFromPacket(packet):
     return raw(packet)[48:129]
 
+def getPMKIDFromPacket(packet):
+    return
+
+def attack():
+    words = open('superdico.txt', 'r').readlines
+    for word in words:
+        word = word.strip()
+        #calculate 4096 rounds to obtain the 256 bit (32 oct) PMK
+        passPhrase = str.encode(word)
+        
+        pmk = pbkdf2(hashlib.sha1,passPhrase, ssid, 4096, 32)()
+    return
 
 def main():
     # Important parameters for key derivation - Those two aren't picked from the .cap file
     passPhrase  = "actuelle"
     A           = "Pairwise key expansion" #this string is used in the pseudo-random function
+    
     #Association Request Info
     ssid, APmac, Clientmac = getAssocReqInfo(wpa)
     #Handshake
@@ -95,7 +108,9 @@ def main():
     # Authenticator and Supplicant Nonces, MIC
     ANonce, SNonce, mic = getNouncesAndMic(handshake)
 
-    
+    # Get the PMKID from the first message of the handshake
+    pmkid = getPMKIDFromPacket(handshake[0])
+
     # When attacking WPA, we would compare it to our own MIC calculated using passphrases from a dictionary
     # End Set to 0 based on the "Quelques éléments à considérer" :D
     data = getDataFromPacket(handshake[3]) + b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -109,30 +124,6 @@ def main():
     print ("AP Nonce: ",b2a_hex(ANonce),"\n")
     print ("Client Nonce: ",b2a_hex(SNonce),"\n")
 
-
-    # Nothing to change regarding how B is computed -- No changes overall below
-    B = min(APmac,Clientmac)+max(APmac,Clientmac)+min(ANonce,SNonce)+max(ANonce,SNonce) #used in pseudo-random function
-
-    #calculate 4096 rounds to obtain the 256 bit (32 oct) PMK
-    passPhrase = str.encode(passPhrase)
-    ssid = str.encode(ssid)
-    pmk = pbkdf2(hashlib.sha1,passPhrase, ssid, 4096, 32)
-
-    #expand pmk to obtain PTK
-    ptk = customPRF512(pmk,str.encode(A),B)
-
-    #calculate MIC over EAPOL payload (Michael)- The ptk is, in fact, KCK|KEK|TK|MICK
-    mic = hmac.new(ptk[0:16],data,hashlib.sha1)
-
-    print ("\nResults of the key expansion")
-    print ("=============================")
-    print ("PMK:\t\t",pmk.hex(),"\n")
-    print ("PTK:\t\t",ptk.hex(),"\n")
-    print ("KCK:\t\t",ptk[0:16].hex(),"\n")
-    print ("KEK:\t\t",ptk[16:32].hex(),"\n")
-    print ("TK:\t\t",ptk[32:48].hex(),"\n")
-    print ("MICK:\t\t",ptk[48:64].hex(),"\n")
-    print ("MIC:\t\t",mic.hexdigest(),"\n")
 
 if __name__ == "__main__":
     main()

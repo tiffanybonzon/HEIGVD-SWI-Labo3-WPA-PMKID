@@ -1,0 +1,6 @@
+aspirateur
+actuelle
+motdepasse
+passphrase
+admin123
+monsuperwifi
