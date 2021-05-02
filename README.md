@@ -51,7 +51,7 @@ Utilisant votre script précédent, le modifier pour réaliser les taches suivan
 
 
 
-![](./screenshots/pmkid_output.png)
+![](img/pmkid_output.png)
 
 La passphrase de l'AP `Sunrise_2.4GHz_DD4B90` apparaît ici deux fois car il y a 2 association requests et 2 handshakes avec chacun un client différent. Le meilleur endroit pour filtrer les réseaux avec une passphrase trouvée serait dans notre boucle du main, mais il nous faudrait un dictionnaire contenant le SSID, l'adresse MAC de l'AP ainsi que la passhprase trouvée. Vu la petite taille de notre dictionnaire ceci n'est pas nécessaire.
 
