@@ -54,6 +54,23 @@ Utilisant votre script précédent, le modifier pour réaliser les taches suivan
 
 A manière de comparaison, réaliser l'attaque sur le [fichier de capture](files/PMKID_handshake.pcap) utilisant la méthode décrite [ici](https://hashcat.net/forum/thread-7717.html).
 
+Nous possédons déjà le fichier de capture, nous allons donc ignorer la première étape de la procédure et passer directement à la conversion de ce fichier en quelque chose qui peut être lu par `hashcat`.
+
+Pour cela nous avons exécuté la commande : ` hcxpcapngtool -E essidlist -I identitylist -U usernamelist -o output PMKID_handshake.pcap`, les paramètres `-E`, `-I` et `-U` ne sont pas nécessairement utiles dans notre cas mais nous permettent d'examiner s'ils produisent des résultats. Pour nous, cela produit une liste `essidlist` principalement, ce qui peut être intéressant dans d'autres cas de figure.
+
+![](img/hxcp.png)
+
+Ensuite on va utiliser `hashcat` pour attaquer le fichier à l'aide de notre dictionnaire. Nous allons devoir selectionner un mode d'attaque, nous reperons les points qui nous intéressent dans la documentation.
+
+```
+22000 | WPA-PBKDF2-PMKID+EAPOL                           | Network Protocols
+22001 | WPA-PMK-PMKID+EAPOL                              | Network Protocols
+```
+
+Nous allons donc exécuter `hashcat -a 0 -m 22000 hcxpcat.output superdico.txt` et nous constatons qu'il nous récupère la clé `admin123` correctement et très rapidement. L'avantage d'utiliser `hashcat` plutôt que notre script personnalisé serait de gagner du temps sur une grande liste à tester (ici notre dictionnaire est bien trop petit pour voir une différence) ainsi que de permettre des attaques dictionnaires + règles.
+
+![](img/hashcat.png) 
+
 
 ## Livrables
 
