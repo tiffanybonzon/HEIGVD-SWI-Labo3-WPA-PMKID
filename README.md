@@ -50,6 +50,14 @@ Utilisant votre script précédent, le modifier pour réaliser les taches suivan
    - Différents &rarr; Essayer avec une nouvelle passphrase
 
 
+
+![](./screenshots/pmkid_output.png)
+
+La passphrase de l'AP `Sunrise_2.4GHz_DD4B90` apparaît ici deux fois car il y a 2 association requests et 2 handshakes avec chacun un client différent. Le meilleur endroit pour filtrer les réseaux avec une passphrase trouvée serait dans notre boucle du main, mais il nous faudrait un dictionnaire contenant le SSID, l'adresse MAC de l'AP ainsi que la passhprase trouvée. Vu la petite taille de notre dictionnaire ceci n'est pas nécessaire.
+
+Nous ne pouvons pas élimminer une des deux association requests basée sur le SSID et l'adresse MAC de l'AP car un client peut ne pas avoir commencée le handshake au moment oũ la capture a été effectuée.
+
+
 ### 3. Attaque hashcat
 
 A manière de comparaison, réaliser l'attaque sur le [fichier de capture](files/PMKID_handshake.pcap) utilisant la méthode décrite [ici](https://hashcat.net/forum/thread-7717.html).
